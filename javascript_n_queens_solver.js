@@ -54,12 +54,6 @@ function isValidPosition(nQueenPositions, newPosition) {
     return isValid;
 }
 
-
-//console.log(isValidPosition([[0,0]],[0,1]));
-//console.log(isValidPosition([[0,0]],[1,0]));
-//console.log(isValidPosition([[0,0]],[4,4]));
-
-
 function solve(nQueensSize, nQueenPositions, currentColumn) {
     if((currentColumn == nQueensSize) && (nQueenPositions.length == nQueensSize)) {
         return [nQueenPositions];
@@ -75,15 +69,8 @@ function solve(nQueensSize, nQueenPositions, currentColumn) {
             newNQueenPositions.push(newPosition);
 
             solution = solve(nQueensSize, newNQueenPositions, currentColumn+1);
-            //console.log(solution.length);
             if(solution.length != 0) {
-                //if(currentColumn == 0)
-            //    console.log("Found Solution:", solution);
-                //solutions.push(solution);
                 Array.prototype.push.apply(solutions,solution);
-                //console.log(solution);
-                //     process.exit();
-
             }
         }
     }
@@ -91,11 +78,9 @@ function solve(nQueensSize, nQueenPositions, currentColumn) {
     return solutions;
 }
 
-//console.time("myTimer");
 var startTime = new Date();
 var solutions = solve(nQueensSize, [], 0);
 var endTime = new Date();
-//console.timeEnd("myTimer");
 
 var elapsedTime = endTime.getTime()-startTime.getTime();
 
