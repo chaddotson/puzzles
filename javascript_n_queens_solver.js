@@ -12,7 +12,7 @@ if(process.argv.length >= 3) {
 
 }
 else {
-    console.log("usage: node javascript-n-queens BOARD_SIZE [-d]");
+    console.log("usage: node javascript_n_queens_solver.js BOARD_SIZE [-d]");
     process.exit();
 }
 
