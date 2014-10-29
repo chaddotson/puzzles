@@ -1,4 +1,10 @@
-local author = 'Chad Dotson'
+#!/usr/bin/env luajit
+
+-- note: snarky "doubles the calculation time" comments only really apply at size=10 or lower
+-- ...but they are spookily accurate
+
+-- luajit factoid: removing this variable doubles the calculation time
+local derp = 'derpderp'
 
 local board_size = os.getenv('board_size')
 
@@ -20,26 +26,16 @@ function table.copy(t)
     return copy
 end
 
-local function display_queens(n_queens_size, solution, test)
-    local size = #solution
+local function display_queens(solution)
+    -- luajit factoid: using "size" instead of n_queens_size doubles the calculation time
+    local n_queens_size = #solution
     for y = 1, n_queens_size do
         for x = 1, n_queens_size do
-            local out
-            if test and test[1] == x and test[2] == y then
-                out = '?'
-            else
-                for _,cord in ipairs(solution) do
-                    if cord[1] == x and cord[2] == y then
-                        out = 'Q'
-                        break
-                    end
-                end
-                if out == nil then
-                    if y > size or x > size then
-                        out = 'x'
-                    else
-                        out = '_'
-                    end
+            local out = '_'
+            for i,cord in ipairs(solution) do
+                if cord[1] == x and cord[2] == y then
+                    out = 'Q'
+                    break
                 end
             end
             io.write(out)
@@ -49,11 +45,13 @@ local function display_queens(n_queens_size, solution, test)
 end
 
 local function valid_position(n_queens_positions, new_position)
-    for i,existing_position in ipairs(n_queens_positions) do
+    for _,existing_position in ipairs(n_queens_positions) do
+        --luajit factoid: using locals to hold table values doubles the calculation time
         if existing_position[2] == new_position[2] or existing_position[1] == new_position[1] then
             return false
         end
 
+        -- luajit factoid: NOT using locals to hold math.abs results doubles the calculation time
         local row_difference = math.abs(new_position[2] - existing_position[2])
         local column_difference = math.abs(new_position[1] - existing_position[1])
         
@@ -66,42 +64,67 @@ local function valid_position(n_queens_positions, new_position)
 end
 
 local function solve(n_queens_size, n_queens_positions, current_row, current_column, solutions)
-
     if current_column == n_queens_size + 1 then
         if #n_queens_positions == n_queens_size then
             solutions[#solutions+1] = table.copy(n_queens_positions)
         end
-        current_row = table.remove(n_queens_positions)[2]
-        return solve(n_queens_size, n_queens_positions, current_row+1, current_column-1,solutions)
+        -- note: previous row is saved so we don't need true recursion yay
+        return solve(
+            n_queens_size, 
+            n_queens_positions, 
+            table.remove(n_queens_positions)[2]+1, 
+            current_column-1, 
+            solutions)
     end
 
     if current_row == n_queens_size + 1 then
         if #n_queens_positions == 0 then
+            -- we ran outta piddies
             return solutions
         end
-        return solve(n_queens_size, n_queens_positions, table.remove(n_queens_positions)[2] + 1,current_column-1, solutions)
+        -- note: previous row is saved so we don't need true recursion yay
+        return solve(
+            n_queens_size, 
+            n_queens_positions, 
+            table.remove(n_queens_positions)[2] + 1,
+            current_column-1, 
+            solutions)
     end
 
     local new_position = {current_column, current_row}
 
     if valid_position(n_queens_positions, new_position) then
-
         n_queens_positions[#n_queens_positions+1] = new_position
-        return solve(n_queens_size, n_queens_positions, 1, current_column+1, solutions)
+        -- success, onto the next column!
+        return solve(
+            n_queens_size, 
+            n_queens_positions, 
+            1, 
+            current_column+1, 
+            solutions)
     else
-        return solve(n_queens_size, n_queens_positions, current_row + 1, current_column, solutions)
+        -- fail, try the next row in the current column
+        return solve(
+            n_queens_size, 
+            n_queens_positions, 
+            current_row + 1, 
+            current_column, 
+            solutions)
     end
 end
 
+-- just in case...
+collectgarbage('stop')
 local start_time = os.clock()
 local solutions = solve(board_size, {}, 1, 1, {})
 local end_time = os.clock()
+collectgarbage('restart')
 
 print ("N-Queens Found "..#solutions.." Solutions in "..(end_time-start_time).." on a "..board_size..'x'..board_size.." board")
 
 if display then
     for i,solution in ipairs(solutions) do
         print ("Solution", i)
-        display_queens(board_size,solution)
+        display_queens(solution)
     end
 end
