@@ -54,9 +54,7 @@ function solve(nQueensSize, nQueenPositions, currentColumn) {
             newNQueenPositions.push(newPosition);
 
             solution = solve(nQueensSize, newNQueenPositions, currentColumn+1);
-            if(solution.length != 0) {
-                Array.prototype.push.apply(solutions,solution);
-            }
+            for(var i=0; i<solution.length; i++) solutions.push(solution[i])
         }
     }
 
