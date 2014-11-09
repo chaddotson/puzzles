@@ -1,10 +1,4 @@
-var nQueensSize = process.argv[2] || 0;
-var displaySolutions = process.argv[3] === '-d' || false;
 
-if(process.argv.length < 3) {
-    console.log("usage: node javascript_n_queens_solver.js BOARD_SIZE [-d]");
-    process.exit();
-}
 
 function displayQueens(solution) {
     for(var row=0; row < solution.length; row++) {
@@ -29,8 +23,8 @@ function isValidPosition(nQueenPositions, newPosition){
         if( existingPosition[1] === newPosition[1] || existingPosition[0] === newPosition[0] ){
             return false 
         }
-        rowDifference = Math.abs(newPosition[1]-existingPosition[1]);
-        columnDifference = Math.abs(newPosition[0]-existingPosition[0]);
+        var rowDifference = Math.abs(newPosition[1]-existingPosition[1]);
+        var columnDifference = Math.abs(newPosition[0]-existingPosition[0]);
 
         if(rowDifference === columnDifference) {
             return false;
@@ -40,7 +34,7 @@ function isValidPosition(nQueenPositions, newPosition){
 }
 
 function solve(nQueensSize, nQueenPositions, currentColumn) {
-    if((currentColumn == nQueensSize) && (nQueenPositions.length == nQueensSize)) {
+    if( currentColumn === nQueensSize && nQueenPositions.length === nQueensSize) {
         return [nQueenPositions];
     }
 
@@ -61,8 +55,16 @@ function solve(nQueensSize, nQueenPositions, currentColumn) {
     return solutions;
 }
 
+
+if(process.argv.length < 3) {
+    console.log("usage: node javascript_n_queens_solver.js BOARD_SIZE [-d]");
+    process.exit();
+}
+
+var nQueensSize = +process.argv[2] || 0
+var displaySolutions = process.argv[3] === '-d'
 var startTime = Date.now()
-var solutions = solve(nQueensSize, [], 0);
+var solutions = solve(nQueensSize, [], 0)
 var endTime = Date.now()
 
 var elapsedTime = endTime - startTime

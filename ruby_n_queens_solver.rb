@@ -35,11 +35,11 @@ def get_args(args)
 end
 
 def display_queens(solution)
-    for y in 0..solution.length-1:
-        for x in 0..solution.length-1:
+    for y in 0..solution.length-1 do
+        for x in 0..solution.length-1 do 
             out = "_"
-            for cord in solution:
-                if cord[0] == x and cord[1] == y:
+            for cord in solution do
+                if cord[0] == x and cord[1] == y then
                     out = "Q"
                 end
             end
@@ -106,7 +106,7 @@ end_time = Time.now
 puts "N-Queens Found #{solutions.length} Solutions in #{end_time-start_time} on a #{options.board_size}x#{options.board_size} board"
 
 if options.display_queens
-    for i in 0..solutions.length-1:
+    for i in 0..solutions.length-1 do
         puts "Solution #{i+1}"
         display_queens(solutions[i])   
     end
