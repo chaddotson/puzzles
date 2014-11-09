@@ -1,57 +1,42 @@
-var _ = require('underscore');
+var nQueensSize = process.argv[2] || 0;
+var displaySolutions = process.argv[3] === '-d' || false;
 
-displaySolutions = false;
-nQueensSize = 0;
-
-if(process.argv.length >= 3) {
-    nQueensSize = process.argv[2];
-
-    if((process.argv.length == 4) && (process.argv[3] === "-d")) {
-        displaySolutions = true;
-    }
-
-}
-else {
+if(process.argv.length < 3) {
     console.log("usage: node javascript_n_queens_solver.js BOARD_SIZE [-d]");
     process.exit();
 }
 
 function displayQueens(solution) {
     for(var row=0; row < solution.length; row++) {
-        var line = "";
         for(var col=0; col < solution.length; col++) {
             var elementOut = "_ ";
-            _.each(solution, function(coordinate) {
+            solution.forEach(function(coordinate) {
                 if((coordinate[0] == col) && (coordinate[1] == row)) {
                     elementOut = "Q ";
                 }
             });
-            line+=elementOut;
+            process.stdout.write(elementOut)
         }
-        console.log(line);
+        console.log()
     }
 }
 
 
-function isValidPosition(nQueenPositions, newPosition) {
+function isValidPosition(nQueenPositions, newPosition){
+    for(var i=0; i < nQueenPositions.length; i++){
+        var existingPosition = nQueenPositions[i]
 
-    var isValid = true;
-    _.each(nQueenPositions, function(existingPosition) {
-        if((existingPosition[1] == newPosition[1]) || (existingPosition[0] == newPosition[0])) {
-            isValid = false;
+        if( existingPosition[1] === newPosition[1] || existingPosition[0] === newPosition[0] ){
+            return false 
         }
-
         rowDifference = Math.abs(newPosition[1]-existingPosition[1]);
         columnDifference = Math.abs(newPosition[0]-existingPosition[0]);
 
-        //console.log(rowDifference, columnDifference);
-
-        if(rowDifference == columnDifference) {
-            isValid = false;
+        if(rowDifference === columnDifference) {
+            return false;
         }
-    });
-
-    return isValid;
+    }
+    return true 
 }
 
 function solve(nQueensSize, nQueenPositions, currentColumn) {
@@ -65,7 +50,7 @@ function solve(nQueensSize, nQueenPositions, currentColumn) {
         var newPosition = [currentColumn, row];
 
         if(isValidPosition(nQueenPositions,newPosition)) {
-            var newNQueenPositions = nQueenPositions.slice(0);
+            var newNQueenPositions = nQueenPositions.concat();
             newNQueenPositions.push(newPosition);
 
             solution = solve(nQueensSize, newNQueenPositions, currentColumn+1);
@@ -78,19 +63,19 @@ function solve(nQueensSize, nQueenPositions, currentColumn) {
     return solutions;
 }
 
-var startTime = new Date();
+var startTime = Date.now()
 var solutions = solve(nQueensSize, [], 0);
-var endTime = new Date();
+var endTime = Date.now()
 
-var elapsedTime = endTime.getTime()-startTime.getTime();
+var elapsedTime = endTime - startTime
 
-console.log("N-Queens Found " + solutions.length + " Solutions in " + elapsedTime +"ms on a " + nQueensSize + "x" + nQueensSize + " board.");
+console.log("N-Queens Found", solutions.length, "Solutions in", elapsedTime/1000 + 's', 'on a', nQueensSize + "x" + nQueensSize , "board.");
 
 
 if(displaySolutions) {
     var counter = 1;
-    _.each(solutions, function(solution) {
-        console.log("Solution: " + counter);
+    solutions.forEach(function(solution) {
+        console.log("Solution", counter);
         displayQueens(solution);
         counter++;
     });

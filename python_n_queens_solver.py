@@ -65,8 +65,7 @@ start_time = datetime.now()
 solutions = solve(args.board_size, [], 0)
 end_time = datetime.now()
 
-print "N-Queens Found {0} Solutions in {1} on a {2}x{2} board".format(len(solutions), end_time-start_time,
-                                                                      args.board_size, args.board_size)
+print "N-Queens Found {0} Solutions in {1}s on a {2}x{2} board".format(len(solutions), (end_time-start_time).total_seconds(), args.board_size, args.board_size)
 
 if args.display:
     for i in range(0, len(solutions)):
