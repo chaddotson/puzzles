@@ -120,7 +120,7 @@ local solutions = solve(board_size, {}, 1, 1, {})
 local end_time = os.clock()
 collectgarbage('restart')
 
-print ("N-Queens Found "..#solutions.." Solutions in "..(end_time-start_time).." on a "..board_size..'x'..board_size.." board")
+print ("N-Queens Found "..#solutions.." Solutions in "..(end_time-start_time).."s on a "..board_size..'x'..board_size.." board")
 
 if display then
     for i,solution in ipairs(solutions) do
