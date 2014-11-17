@@ -69,7 +69,7 @@ var endTime = Date.now()
 
 var elapsedTime = endTime - startTime
 
-console.log("N-Queens Found", solutions.length, "Solutions in", elapsedTime/1000 + 's', 'on a', nQueensSize + "x" + nQueensSize , "board.");
+console.log("N-Queens Found %d solutions in %ds on a %dx%d board", solutions.length, elapsedTime/1000, nQueensSize, nQueensSize);
 
 
 if(displaySolutions) {
