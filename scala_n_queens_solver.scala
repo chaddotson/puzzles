@@ -78,7 +78,7 @@ object ScalaNQueensSolver {
         var solutions: List[List[Tuple2[Int,Int]]] = solve( boardSize, nQueenPositions, 0 )
         var endTime: Long = System.currentTimeMillis
                 
-        println("N-Queens Found " + solutions.length + " Solutions in " + (endTime-startTime) + " ms on a " + boardSize+ "x" + boardSize + " board")
+        println("N-Queens Found " + solutions.length + " Solutions in " + (endTime-startTime)/1000.0 + "s on a " + boardSize+ "x" + boardSize + " board")
                 
         if( displaySolutions ) {
             var i: Int = 1;
