@@ -12,12 +12,13 @@ def get_args():
 
     return parser.parse_args()
 
+
 def display_queens(solution):
     for y in range(0, len(solution)):
         for x in range(0, len(solution)):
             out = "_"
-            for cord in solution:
-                if cord[0] == x and cord[1] == y:
+            for coordinate in solution:
+                if coordinate[0] == x and coordinate[1] == y:
                     out = "Q"
             print out,
         print
@@ -59,6 +60,7 @@ def solve(n_queens_size, n_queen_positions, current_column):
 
     return solutions
 
+
 args = get_args()
 
 start_time = datetime.now()
@@ -71,5 +73,3 @@ if args.display:
     for i in range(0, len(solutions)):
         print "Solution", i+1
         display_queens(solutions[i])
-
-
