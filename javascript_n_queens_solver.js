@@ -1,4 +1,4 @@
-
+"use strict"
 
 function displayQueens(solution) {
     for(var row=0; row < solution.length; row++) {
@@ -47,7 +47,7 @@ function solve(nQueensSize, nQueenPositions, currentColumn) {
             var newNQueenPositions = nQueenPositions.concat();
             newNQueenPositions.push(newPosition);
 
-            solution = solve(nQueensSize, newNQueenPositions, currentColumn+1);
+            var solution = solve(nQueensSize, newNQueenPositions, currentColumn+1);
             for(var i=0; i<solution.length; i++) solutions.push(solution[i])
         }
     }
