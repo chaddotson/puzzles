@@ -1,4 +1,3 @@
-"use strict"
 
 function displayQueens(solution) {
     for(var row=0; row < solution.length; row++) {
