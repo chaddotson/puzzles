@@ -33,5 +33,11 @@ for i in {8..12}; do
         echo "ruby: $(ruby ruby_n_queens_solver.rb $i)"
     fi
 
+    if [[ -x $(which dart) ]]
+    then
+      echo "dart: $(dart dart_n_queens_solver.dart $i)"
+    fi
+
     echo
+
 done
