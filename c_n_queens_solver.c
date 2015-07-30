@@ -4,11 +4,7 @@
 #include <string.h>
 #include <time.h>
 
-typedef struct {
-    int x;
-    int y;
-} position_t;
-
+typedef int position_t;               /* the y-position of the queen */
 typedef position_t* solution_t;       /* a solution is an array of positions */
 typedef solution_t* solution_list_t;  /* a solution list is an array of solutions */
 
@@ -92,11 +88,8 @@ void solve( int nQueensSize, solution_list_t *solutions, int *numberOfSolutions,
         return;
     }
 
-    /* Not really necessary to have .x at all.. */
-    workingSolution[currentColumn].x = currentColumn; 
-
     for(row = 0; row < nQueensSize; row++) {
-        workingSolution[currentColumn].y = row;
+        workingSolution[currentColumn] = row;
         
         if(isValidPosition(workingSolution, currentColumn)) {
  
@@ -115,15 +108,15 @@ bool isValidPosition(solution_t nQueensPositions, int numberOfQueens) {
     int rowDifference = 0;
     int columnDifference = 0;
     
-    const position_t *const newPosition = &(nQueensPositions[numberOfQueens]);
+    const position_t new_y = nQueensPositions[numberOfQueens];
 
     for( queenIndex = 0; queenIndex < numberOfQueens; queenIndex++) {
-        if( (nQueensPositions[queenIndex].x == newPosition->x) || (nQueensPositions[queenIndex].y == newPosition->y) ) {
+        if( nQueensPositions[queenIndex] == new_y) {
             return false;
         }
         
-        rowDifference = abs(newPosition->y - nQueensPositions[queenIndex].y);
-        columnDifference = abs(newPosition->x - nQueensPositions[queenIndex].x);
+        rowDifference = abs(new_y - nQueensPositions[queenIndex]);
+        columnDifference = abs(numberOfQueens - queenIndex);
         
         if( rowDifference == columnDifference ) {
             return false;
@@ -198,16 +191,10 @@ void displayQueens(solution_t solution, int numberOfQueens) {
     
     for(y=0; y < numberOfQueens; y++) {
         for(x=0; x < numberOfQueens; x++) {
-            out = '_';
-            for(z=0; z < numberOfQueens; z++) {
-                if((solution[z].x == x) && (solution[z].y == y)) {
-                    out = 'Q';
-                }
-            }
-            
-            printf("%c ", out);
+            putchar( (solution[x]==y)?'Q':'_' );
+            putchar( ' ' );
         }
-        printf("\n");
+        putchar('\n');
     }
     
 }
