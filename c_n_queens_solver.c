@@ -9,28 +9,25 @@ typedef struct {
     int y;
 } position_t;
 
-typedef position_t* position_ptr_t;
-typedef position_ptr_t* solution_ptr_t;
-typedef solution_ptr_t* solution_ptr_ref_t;
-typedef solution_ptr_t* solutions_ptr_t;
-typedef solutions_ptr_t* solutions_ptr_ref_t;
+typedef position_t* solution_t;       /* a solution is an array of positions */
+typedef solution_t* solution_list_t;  /* a solution list is an array of solutions */
 
-void deleteSolutions(solutions_ptr_t solutions, int numberOfSolutions, int maxSizeOfSolution);
-void deleteSolution(solution_ptr_t solution, int maxSizeOfSolution);
-bool isValidPosition(solution_ptr_t nQueensPositions, int numberOfQueens, position_ptr_t newPosition);
-bool copySolution(solution_ptr_t solution, solution_ptr_ref_t newSolution, int maxSizeOfSolution);
-bool copyToSolutions(solutions_ptr_ref_t solutions, int *numberOfSolutions, solution_ptr_t newSolution, int maxSolutionSize);
-bool solve( int nQueensSize, solutions_ptr_ref_t solutions, int *numberOfSolutions, solution_ptr_t currentSolution, int sizeOfCurrentSolution, int currentColumn);
+void deleteSolutions(solution_list_t solutions, int numberOfSolutions);
+solution_t createSolution(int nQueenSize);
+void deleteSolution(solution_t solution);
+bool isValidPosition(solution_t nQueensPositions, int numberOfQueens);
+bool copySolution(solution_t solution, solution_t *newSolution, int maxSizeOfSolution);
+bool copyToSolutions(solution_list_t *solutions, int *numberOfSolutions, solution_t newSolution, int maxSolutionSize);
+void solve( int nQueensSize, solution_list_t *solutions, int *numberOfSolutions, solution_t workingSolution, int currentColumn);
 
 void printUsageAndExit();
-void displaySolutions( solutions_ptr_t solutions, int numberOfSolutions, int numberOfQueens) ;
+void displaySolutions( solution_list_t solutions, int numberOfSolutions, int numberOfQueens) ;
 void displayQueens();
 
 
 int main( int argc, char *argv[]) {
     
-    solution_ptr_t solution = NULL;
-    solutions_ptr_t solutions = NULL;
+    solution_list_t solutions = NULL;
     int numberOfSolutions = 0;
     
     clock_t start, end;
@@ -61,17 +58,10 @@ int main( int argc, char *argv[]) {
     
     
     printf("%d\n", sizeOfBoard);
-    
-    
-    solution = (solution_ptr_t)malloc(sizeof(position_ptr_t) * sizeOfBoard);
-    
-    
-    for(i=0; i < sizeOfBoard; i++) {
-        solution[i] = NULL;
-    }
+    solution_t working = createSolution(sizeOfBoard);  
     
     start = clock();
-    solve( sizeOfBoard, &solutions, &numberOfSolutions, solution, 0, 0);
+    solve( sizeOfBoard, &solutions, &numberOfSolutions, working, 0);
     end = clock();
     
     durationInMilliseconds = (end-start) * 1000 / CLOCKS_PER_SEC;
@@ -83,6 +73,8 @@ int main( int argc, char *argv[]) {
         displaySolutions(solutions, numberOfSolutions, sizeOfBoard);
     }
     
+    deleteSolutions(solutions,numberOfSolutions);
+    deleteSolution(working);
     return 0;
 }
 
@@ -92,53 +84,46 @@ void printUsageAndExit() {
     exit(1);
 }
 
-bool solve( int nQueensSize, solutions_ptr_ref_t solutions, int *numberOfSolutions, solution_ptr_t workingSolution, int sizeOfCurrentSolution, int currentColumn) {
-    position_ptr_t newPosition = NULL;
-    solution_ptr_t newPossibleSolution = NULL;
+void solve( int nQueensSize, solution_list_t *solutions, int *numberOfSolutions, solution_t workingSolution, int currentColumn) {
     int row = 0;
     
-    if((currentColumn == nQueensSize) && (sizeOfCurrentSolution == nQueensSize)) {
+    if(currentColumn == nQueensSize) {
         copyToSolutions(solutions, numberOfSolutions, workingSolution, nQueensSize);
-        return true;
+        return;
     }
-    
+
+    /* Not really necessary to have .x at all.. */
+    workingSolution[currentColumn].x = currentColumn; 
+
     for(row = 0; row < nQueensSize; row++) {
-        newPosition = (position_ptr_t) malloc(sizeof(position_t));
-        newPosition->x = currentColumn;
-        newPosition->y = row;
+        workingSolution[currentColumn].y = row;
         
-        if(isValidPosition(workingSolution, sizeOfCurrentSolution, newPosition)) {
-            
-            copySolution(workingSolution, &newPossibleSolution, nQueensSize);
-            newPossibleSolution[sizeOfCurrentSolution] = newPosition;
+        if(isValidPosition(workingSolution, currentColumn)) {
  
-            solve(nQueensSize, solutions, numberOfSolutions, newPossibleSolution, sizeOfCurrentSolution+1, currentColumn+1);
+            solve(nQueensSize, solutions, numberOfSolutions, workingSolution, currentColumn+1);
             
-       
-        } else {
-            free(newPosition);
-            newPosition = NULL;
         }
     }
     
-    deleteSolution(workingSolution, nQueensSize);
-    return true;
+    return;
 }
 
 
 
-bool isValidPosition(solution_ptr_t nQueensPositions, int numberOfQueens, position_ptr_t newPosition) {
+bool isValidPosition(solution_t nQueensPositions, int numberOfQueens) {
     int queenIndex = 0;
     int rowDifference = 0;
     int columnDifference = 0;
     
+    const position_t *const newPosition = &(nQueensPositions[numberOfQueens]);
+
     for( queenIndex = 0; queenIndex < numberOfQueens; queenIndex++) {
-        if( (nQueensPositions[queenIndex]->x == newPosition->x) || (nQueensPositions[queenIndex]->y == newPosition->y) ) {
+        if( (nQueensPositions[queenIndex].x == newPosition->x) || (nQueensPositions[queenIndex].y == newPosition->y) ) {
             return false;
         }
         
-        rowDifference = abs(newPosition->y - nQueensPositions[queenIndex]->y);
-        columnDifference = abs(newPosition->x - nQueensPositions[queenIndex]->x);
+        rowDifference = abs(newPosition->y - nQueensPositions[queenIndex].y);
+        columnDifference = abs(newPosition->x - nQueensPositions[queenIndex].x);
         
         if( rowDifference == columnDifference ) {
             return false;
@@ -149,71 +134,55 @@ bool isValidPosition(solution_ptr_t nQueensPositions, int numberOfQueens, positi
 }
 
 
-bool copyToSolutions(solutions_ptr_ref_t solutions, int *numberOfSolutions, solution_ptr_t newSolution, int maxSolutionSize) {
-    (*numberOfSolutions)+=1;
-    
-    if(*solutions == NULL) {
-        *solutions = (solutions_ptr_t)malloc(sizeof(solutions_ptr_t));
-    } else {
-        *solutions = (solutions_ptr_t)realloc(*solutions, sizeof(solutions_ptr_t) * (*numberOfSolutions));
-    }
+bool copyToSolutions(solution_list_t *solutions, int *numberOfSolutions, solution_t newSolution, int maxSolutionSize) {
+    const size_t CHUNK_SIZE = 10000;   /* how many to allocate each time we realloc */    
+
+    if( (*numberOfSolutions % CHUNK_SIZE) == 0) {
+        size_t numChunks = (*numberOfSolutions) / CHUNK_SIZE + 1;
+        *solutions = (solution_list_t)realloc(*solutions, numChunks * CHUNK_SIZE * sizeof(solution_t));
+    }  
 
     if(solutions == NULL) {
         return false;
     }
-    solution_ptr_t copy = NULL;
-    
+
+    solution_t copy = NULL;
     copySolution(newSolution, &copy, maxSolutionSize);
     
-    (*solutions)[(*numberOfSolutions)-1] = copy;
+    (*solutions)[(*numberOfSolutions)] = copy;
 
+    (*numberOfSolutions)+=1;
     return true;
 }
 
 
-bool copySolution(solution_ptr_t solution, solution_ptr_ref_t newSolution, int maxSizeOfSolution) {
+bool copySolution(solution_t solution, solution_t *newSolution, int maxSizeOfSolution) {
     int i = 0;
     
-    *newSolution = (solution_ptr_t)malloc(sizeof(position_ptr_t) * maxSizeOfSolution);
-    
-    for(i=0; i < maxSizeOfSolution; i++) {
-        if(solution[i] != NULL) {
-            (*newSolution)[i] = (position_ptr_t)malloc((sizeof(position_ptr_t)));
-            memcpy((*newSolution)[i], solution[i], sizeof(position_t));
-        } else {
-            (*newSolution)[i] = NULL;
-        }
-    }
-    
+    *newSolution = createSolution(maxSizeOfSolution);
+    memcpy(*newSolution, solution, maxSizeOfSolution*sizeof(position_t) );
     return true;
 }
 
-void deleteSolutions(solutions_ptr_t solutions, int numberOfSolutions, int maxSizeOfSolution) {
+void deleteSolutions(solution_list_t solutions, int numberOfSolutions) {
 
     int i = 0;
     for(i = 0; i < numberOfSolutions; i++) {
-        deleteSolution(solutions[i], maxSizeOfSolution);
+        deleteSolution(solutions[i]);
     }
     free(solutions);
     solutions = NULL;
 }
 
-void deleteSolution(solution_ptr_t solution, int maxSizeOfSolution) {
-   
-    int i = 0;
-    for(i=0; i < maxSizeOfSolution; i++) {
-        if(solution[i] != NULL) {
-            free(solution[i]);
-            solution[i] = NULL;
-        } else {
-            break;
-        }
-    }
-    free(solution);
-    solution = NULL;
+solution_t createSolution(int nQueensSize) {
+   return (solution_t)malloc(nQueensSize*sizeof(position_t));
 }
 
-void displaySolutions( solutions_ptr_t solutions, int numberOfSolutions, int numberOfQueens) {
+void deleteSolution(solution_t solution) {
+   free(solution);
+} 
+
+void displaySolutions( solution_list_t solutions, int numberOfSolutions, int numberOfQueens) {
     int i;
     
     for(i=0; i < numberOfSolutions; i++) {
@@ -223,7 +192,7 @@ void displaySolutions( solutions_ptr_t solutions, int numberOfSolutions, int num
     
 }
 
-void displayQueens(solution_ptr_t solution, int numberOfQueens) {
+void displayQueens(solution_t solution, int numberOfQueens) {
     int x, y, z;
     char out;
     
@@ -231,7 +200,7 @@ void displayQueens(solution_ptr_t solution, int numberOfQueens) {
         for(x=0; x < numberOfQueens; x++) {
             out = '_';
             for(z=0; z < numberOfQueens; z++) {
-                if((solution[z]->x == x) && (solution[z]->y == y)) {
+                if((solution[z].x == x) && (solution[z].y == y)) {
                     out = 'Q';
                 }
             }
