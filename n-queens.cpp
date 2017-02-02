@@ -91,7 +91,7 @@ int main(int argc, const char *argv[]) {
     std::vector<Solution> solutions;
     solutions.reserve(1 << 24); // reserve over 16 million
     Solver s(n, solutions);
-    auto time = benchmark([&](){ s.nonRec(); });
+    auto time = benchmark([&](){ s.next(0); });
     
     std::cout << "N-Queens Found " << solutions.size() << " Solutions in " <<
         std::fixed << std::setprecision(6) << time/1000000.0 << "s on a " <<
