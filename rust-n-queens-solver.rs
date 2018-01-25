@@ -1,66 +1,59 @@
-
-
-
-use std::num::abs;
-use std::os::args;
-
+use std::env;
+use std::time::SystemTime;
 
 
 fn main() {
-    let args = args();
-    
+    let args: Vec<String> = env::args().collect();
+
     if args.len() < 2 {
         println!("usage: rust-n-queens-solver N [-d]");
         return;
     }
-    
-    let mut displayResults: bool = false;
-    
-    
-    if args.len() == 3 && args[2] == ~"-d" {
-        displayResults=true;
+
+    let mut display_results: bool = false;
+    if args.len() == 3 && args[2] == "-d" {
+        display_results=true;
     }
 
-    let nQueenPositions: ~[~[uint]] = ~[];
-    
-    
-    let size: uint = (from_str::<uint>(args[1])).unwrap();
-    let solutions: ~[~[~[uint]]] = solve(size, nQueenPositions, 0);
-    
-    
-    println!("Found {} solutions", solutions.len());
+    let size: usize = (&args[1]).parse().unwrap();
 
+    let sys_time = SystemTime::now();
 
-    if displayResults {
-        for i in range(0, solutions.len()) {
+    let n_queen_positions : Vec<(usize, usize)> = Vec::new();
+    let solutions = solve(size, n_queen_positions, 0);
+
+    let end_time = SystemTime::now();
+    let run_time = end_time.duration_since(sys_time)
+                             .expect("SystemTime::duration_since failed");
+
+    println!( "N-Queens Found {} solutions in {:.3}s on a {}x{} board",
+                solutions.len(),
+                run_time.as_secs() as f64 + run_time.subsec_nanos() as f64 * 0.000000001,
+                size, size );
+
+    if display_results {
+        for i in 0..solutions.len() {
             println!("Solution: {}", i+1);
-            displayQueens(&solutions[0]);
+            display_queens(&solutions[i]);
         }
     }
 }
 
 
-fn isValidPosition( nQueenPositions: & ~[~[uint]], newPosition: & ~[uint]) -> bool
+fn is_valid_position( n_queen_positions: & Vec<(usize, usize)>, new_position: & (usize, usize) ) -> bool
 {
-    let mut rowDifference: int = 0;
-    let mut columnDifference: int = 0;
-
-    for existingPosition in nQueenPositions.iter()
+    for existing_position in n_queen_positions.iter()
     {
-        if existingPosition[1] == newPosition[1] || existingPosition[0] == newPosition[0]
+        if existing_position.1 == new_position.1 || existing_position.0 == new_position.0
         {
             return false;
         }
-        
-//        let something: int = abs(1);
-        
-        rowDifference = abs(newPosition[1] as int - existingPosition[1] as int);
-        columnDifference = abs(newPosition[0] as int - existingPosition[0] as int);
-        
-        if rowDifference == columnDifference {
+
+        let row_difference = (new_position.1 as isize - existing_position.1 as isize).abs();
+        let column_difference = (new_position.0 as isize - existing_position.0 as isize).abs();
+        if row_difference == column_difference {
             return false;
         }
-
     }
 
     return true;
@@ -68,64 +61,38 @@ fn isValidPosition( nQueenPositions: & ~[~[uint]], newPosition: & ~[uint]) -> bo
 
 
 
-fn solve(nQueensSize: uint, nQueenPositions: ~[~[uint]], currentColumn: uint) -> ~[~[~[uint]]] {
+fn solve(n_queens_size: usize, n_queen_positions: Vec<(usize, usize)>, current_column: usize) -> Vec<Vec<(usize, usize)>> {
 
-    if currentColumn == nQueensSize && nQueenPositions.len() == nQueensSize {
-        let mut rtn: ~[~[~[uint]]] = ~[];
-        rtn.push(nQueenPositions.clone());
-        return rtn;
+    if current_column == n_queens_size {
+        return vec![n_queen_positions.clone()];
     }
-
-
-    let mut solutions: ~[~[~[uint]]] = ~[];
-
-    for row in range(0, nQueensSize) {
-
-        let mut newPosition: ~[uint];
-        newPosition = ~[currentColumn, row];
-        
-        
-        if isValidPosition(&nQueenPositions, &newPosition) {
-        
-            let mut newNQueenPositions: ~[~[uint]] = nQueenPositions.clone();
-        
-            newNQueenPositions.push(newPosition);
-        
-        
-            let mut newSolutions: ~[~[~[uint]]] = ~[];
-        
-            newSolutions = solve(nQueensSize, newNQueenPositions, currentColumn+1);
-
-
-            for i in range(0, newSolutions.len()) {
-                solutions.push(newSolutions[i].clone());
+    let mut solutions : Vec<Vec<(usize, usize)>> = Vec::new();
+    for row in 0..n_queens_size {
+        let new_position = (current_column, row);
+        if is_valid_position(&n_queen_positions, &new_position) {
+            let mut new_queen_positions = n_queen_positions.clone();
+            new_queen_positions.push(new_position);
+            let new_solutions = solve(n_queens_size, new_queen_positions, current_column+1);
+            for new_solution in new_solutions {
+                solutions.push(new_solution);
             }
         }
     }
-
-    
     return solutions;
-    
 }
 
 
-fn displayQueens(solution: &~[~[uint]]) {
-
-    let mut out = ~"";
-    
-    for y in range(0, solution.len()) {
-        for x in range( 0, solution.len()) {
-            out = ~"_";
+fn display_queens(solution: & Vec<(usize, usize)>) {
+    for y in 0..solution.len() {
+        for x in 0..solution.len() {
+            let mut out = "_";
             for cord in solution.iter() {
-                if cord[0] == x && cord[1] == y {
-                    out = ~"Q";
+                if cord.0 == x && cord.1 == y {
+                    out = "Q";
                 }
             }
             print!("{} ", out);
         }
         println!("");
     }
-
 }
-
-
